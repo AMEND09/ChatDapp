@@ -306,6 +306,156 @@
             opacity: 1;
         }
         
+        /* Rooms related styles */
+        .room-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--element-spacing);
+            padding-bottom: var(--element-spacing);
+            border-bottom: 1px solid #eee;
+        }
+        
+        .room-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .room-actions {
+            display: flex;
+        }
+        
+        .rooms-list {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: var(--element-spacing);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-green) #eee;
+        }
+        
+        .room-pill {
+            background-color: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .room-pill.active {
+            background-color: var(--primary-green);
+            color: white;
+        }
+        
+        .room-pill:hover:not(.active) {
+            background-color: #e0e0e0;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 16px;
+            padding: var(--content-padding);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--element-spacing);
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .close-modal:hover {
+            transform: none;
+        }
+        
+        .invite-code {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 18px;
+            margin-bottom: var(--element-spacing);
+            word-break: break-all;
+        }
+        
+        .copy-button {
+            background-color: var(--primary-green);
+            width: 100%;
+        }
+        
+        .room-members {
+            margin-top: var(--element-spacing);
+        }
+        
+        .member {
+            display: inline-block;
+            background-color: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .member.you {
+            background-color: rgba(10, 158, 110, 0.2);
+        }
+        
+        .room-meta {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--medium-text);
+            margin-bottom: 5px;
+        }
+        
+        .member-count {
+            margin-left: 10px;
+        }
+        
         /* Responsive styles */
         @media (max-width: 768px) {
             h1 {
@@ -371,6 +521,21 @@
                 <div class="status-text">Connected as <span id="current-user"></span></div>
                 <button id="sign-out" class="secondary-button" style="margin-left: auto;">Sign Out</button>
             </div>
+            
+            <!-- Rooms List -->
+            <div class="rooms-list" id="rooms-list">
+                <div class="room-pill active" data-room="public">Public</div>
+                <!-- More room pills will be added dynamically -->
+                <div class="room-pill" data-room="create">+ New Room</div>
+            </div>
+            
+            <div class="room-header">
+                <h3 class="room-title" id="current-room-name">Public Chat</h3>
+                <div class="room-actions">
+                    <button id="invite-button" class="secondary-button">Invite Others</button>
+                </div>
+            </div>
+            
             <div class="chat-container">
                 <div id="messages" class="messages">
                     <!-- Messages will be inserted here -->
@@ -379,6 +544,56 @@
                     <input type="text" id="message-input" class="message-input" placeholder="Type your message..." required>
                     <input type="submit" id="send-button" class="send-button" value="Send">
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Room Modal -->
+    <div id="create-room-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Room</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="create-room-form">
+                <input type="text" id="room-name" placeholder="Room Name" required>
+                <input type="password" id="room-password" placeholder="Room Password (optional)">
+                <button type="submit" class="primary-button">Create Room</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Join Room Modal -->
+    <div id="join-room-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Join Room</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="join-room-form">
+                <input type="text" id="join-room-id" placeholder="Room ID" required>
+                <input type="password" id="join-room-password" placeholder="Room Password (if required)">
+                <button type="submit" class="primary-button">Join Room</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Invite Modal -->
+    <div id="invite-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Invite to <span id="invite-room-name"></span></h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <p>Share this room ID with others:</p>
+            <div class="invite-code" id="invite-code"></div>
+            <button id="copy-invite" class="copy-button">Copy Room ID</button>
+            
+            <div class="room-members">
+                <h4>Room Members</h4>
+                <div id="member-list">
+                    <!-- Members will be inserted here -->
+                </div>
             </div>
         </div>
     </div>
@@ -409,6 +624,29 @@
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const notificationElement = document.getElementById('notification');
+        const roomsList = document.getElementById('rooms-list');
+        const currentRoomName = document.getElementById('current-room-name');
+        const inviteButton = document.getElementById('invite-button');
+        
+        // Modal elements
+        const createRoomModal = document.getElementById('create-room-modal');
+        const joinRoomModal = document.getElementById('join-room-modal');
+        const inviteModal = document.getElementById('invite-modal');
+        const createRoomForm = document.getElementById('create-room-form');
+        const joinRoomForm = document.getElementById('join-room-form');
+        const roomNameInput = document.getElementById('room-name');
+        const roomPasswordInput = document.getElementById('room-password');
+        const joinRoomIdInput = document.getElementById('join-room-id');
+        const joinRoomPasswordInput = document.getElementById('join-room-password');
+        const inviteRoomName = document.getElementById('invite-room-name');
+        const inviteCode = document.getElementById('invite-code');
+        const copyInviteButton = document.getElementById('copy-invite');
+        const memberList = document.getElementById('member-list');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        
+        // App State
+        let currentRoom = 'public';
+        let userRooms = {};
         
         // Status indicators
         const setStatus = (type, message) => {
@@ -444,7 +682,8 @@
                     currentUserSpan.textContent = user.is.alias;
                     authCard.classList.add('hidden');
                     chatCard.classList.remove('hidden');
-                    loadMessages();
+                    loadUserRooms();
+                    loadMessages(currentRoom);
                     setStatus('connected', 'Connected');
                 } else {
                     setStatus('connected', 'Ready to sign in');
@@ -476,7 +715,8 @@
                 authCard.classList.add('hidden');
                 chatCard.classList.remove('hidden');
                 authForm.reset();
-                loadMessages();
+                loadUserRooms();
+                loadMessages(currentRoom);
                 showNotification(`Welcome back, ${username}!`);
             });
         };
@@ -516,6 +756,13 @@
             chatCard.classList.add('hidden');
             authCard.classList.remove('hidden');
             messagesContainer.innerHTML = '';
+            // Reset rooms
+            roomsList.innerHTML = `
+                <div class="room-pill active" data-room="public">Public</div>
+                <div class="room-pill" data-room="create">+ New Room</div>
+            `;
+            currentRoom = 'public';
+            currentRoomName.textContent = 'Public Chat';
             showNotification('You have been signed out');
         };
         
@@ -528,6 +775,9 @@
         // Add a message to the UI
         const addMessageToUI = (data, key) => {
             if (!data || !data.who || !data.what || !data.when) return;
+            
+            // Check if message already exists to avoid duplicates
+            if (document.getElementById(`msg-${key}`)) return;
             
             const messageDiv = document.createElement('div');
             const isMyMessage = data.who === user.is.alias;
@@ -546,14 +796,34 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         };
         
-        // Load messages
-        const loadMessages = () => {
-            const chatRef = gun.get('bloochat');
+        // Load messages for a specific room
+        const loadMessages = (roomId) => {
+            // Clear existing messages
+            messagesContainer.innerHTML = '';
             
-            chatRef.map().once((data, key) => {
+            // Get room reference
+            const roomRef = roomId === 'public' 
+                ? gun.get('bloochat') 
+                : gun.get('bloochat').get('rooms').get(roomId);
+            
+            // Subscribe to messages in this room
+            roomRef.map().once((data, key) => {
                 if (data && data.who && data.what && data.when) {
                     addMessageToUI(data, key);
                 }
+            });
+            
+            // Update current room name
+            if (roomId === 'public') {
+                currentRoomName.textContent = 'Public Chat';
+            } else if (userRooms[roomId]) {
+                currentRoomName.textContent = userRooms[roomId].name;
+            }
+            
+            // Update room pills
+            const roomPills = document.querySelectorAll('.room-pill');
+            roomPills.forEach(pill => {
+                pill.classList.toggle('active', pill.dataset.room === roomId);
             });
         };
         
@@ -570,10 +840,328 @@
                 when: Date.now()
             };
             
-            const chatRef = gun.get('bloochat');
-            chatRef.set(messageData);
+            // Send to the current room
+            const roomRef = currentRoom === 'public' 
+                ? gun.get('bloochat') 
+                : gun.get('bloochat').get('rooms').get(currentRoom);
+            
+            roomRef.set(messageData);
             
             messageForm.reset();
+        };
+        
+        // Load user's rooms
+        const loadUserRooms = () => {
+            if (!user.is) return;
+            
+            // Get user's rooms
+            user.get('rooms').map().once((room, roomId) => {
+                if (!room) return;
+                
+                // Add to userRooms object if not already there
+                if (!userRooms[roomId]) {
+                    userRooms[roomId] = room;
+                    addRoomToUI(roomId, room.name);
+                }
+                
+                // Join room members
+                const roomRef = gun.get('bloochat').get('rooms').get(roomId);
+                roomRef.get('members').set({
+                    pub: user.is.pub,
+                    alias: user.is.alias,
+                    joinedAt: Date.now()
+                });
+            });
+        };
+        
+        // Add a room pill to the UI
+        const addRoomToUI = (roomId, roomName) => {
+            // Check if room pill already exists
+            const existingPill = document.querySelector(`.room-pill[data-room="${roomId}"]`);
+            if (existingPill) return;
+            
+            // Create new room pill
+            const roomPill = document.createElement('div');
+            roomPill.className = 'room-pill';
+            roomPill.dataset.room = roomId;
+            roomPill.textContent = roomName;
+            
+            // Insert before the "Create Room" pill
+            const createRoomPill = document.querySelector('.room-pill[data-room="create"]');
+            roomsList.insertBefore(roomPill, createRoomPill);
+            
+            // Add click event
+            roomPill.addEventListener('click', () => switchRoom(roomId));
+        };
+        
+        // Switch to a specific room
+        const switchRoom = (roomId) => {
+            if (roomId === 'create') {
+                openModal(createRoomModal);
+                return;
+            }
+            
+            if (roomId === 'join') {
+                openModal(joinRoomModal);
+                return;
+            }
+            
+            // Update current room
+            currentRoom = roomId;
+            loadMessages(roomId);
+            
+            // Update room header
+            inviteButton.classList.toggle('hidden', roomId === 'public');
+        };
+        
+        // Create a new room
+        const createRoom = async (e) => {
+            e.preventDefault();
+            
+            const roomName = roomNameInput.value.trim();
+            const roomPassword = roomPasswordInput.value.trim();
+            
+            if (!roomName) {
+                showNotification('Room name is required', 'error');
+                return;
+            }
+            
+            try {
+                // Generate a random room ID
+                const roomId = SEA.random(16).toString('base64').replace(/[+/=]/g, '').substring(0, 12);
+                
+                // Create room object
+                const roomData = {
+                    name: roomName,
+                    creator: user.is.pub,
+                    createdAt: Date.now(),
+                    hasPassword: !!roomPassword
+                };
+                
+                // Encrypt room password if provided
+                if (roomPassword) {
+                    const encryptedPassword = await SEA.encrypt(roomPassword, user.pair());
+                    roomData.password = encryptedPassword;
+                }
+                
+                // Save room to user's rooms
+                user.get('rooms').get(roomId).put(roomData);
+                
+                // Save room to global rooms
+                const roomRef = gun.get('bloochat').get('rooms').get(roomId);
+                roomRef.put({ name: roomName, creator: user.is.pub, createdAt: Date.now() });
+                
+                // Add user as member
+                roomRef.get('members').set({
+                    pub: user.is.pub,
+                    alias: user.is.alias,
+                    joinedAt: Date.now()
+                });
+                
+                // Add room to userRooms object
+                userRooms[roomId] = roomData;
+                
+                // Add room to UI
+                addRoomToUI(roomId, roomName);
+                
+                // Switch to the new room
+                switchRoom(roomId);
+                
+                // Close modal
+                closeModal(createRoomModal);
+                createRoomForm.reset();
+                
+                showNotification(`Room "${roomName}" created successfully!`);
+                
+                // Show invite modal
+                setTimeout(() => {
+                    openInviteModal(roomId);
+                }, 500);
+                
+            } catch (error) {
+                showNotification('Error creating room: ' + error.message, 'error');
+            }
+        };
+        
+        // Join a room
+        const joinRoom = async (e) => {
+            e.preventDefault();
+            
+            const roomId = joinRoomIdInput.value.trim();
+            const password = joinRoomPasswordInput.value.trim();
+            
+            if (!roomId) {
+                showNotification('Room ID is required', 'error');
+                return;
+            }
+            
+            try {
+                // Check if room exists
+                const roomRef = gun.get('bloochat').get('rooms').get(roomId);
+                
+                roomRef.once(async (roomData) => {
+                    if (!roomData || !roomData.name) {
+                        showNotification('Room not found', 'error');
+                        return;
+                    }
+                    
+                    // Check if room has password
+                    if (roomData.hasPassword && !password) {
+                        showNotification('This room requires a password', 'error');
+                        return;
+                    }
+                    
+                    // Verify password if needed
+                    if (roomData.hasPassword) {
+                        // Get password from room creator
+                        const creatorUser = gun.user(roomData.creator);
+                        creatorUser.get('rooms').get(roomId).once(async (creatorRoomData) => {
+                            if (!creatorRoomData || !creatorRoomData.password) {
+                                showNotification('Cannot verify room password', 'error');
+                                return;
+                            }
+                            
+                            try {
+                                const decryptedPassword = await SEA.decrypt(creatorRoomData.password, creatorUser.pair());
+                                
+                                if (password !== decryptedPassword) {
+                                    showNotification('Incorrect room password', 'error');
+                                    return;
+                                }
+                                
+                                // Password correct, proceed with joining
+                                completeJoinRoom(roomId, roomData);
+                                
+                            } catch (error) {
+                                showNotification('Error verifying password', 'error');
+                            }
+                        });
+                    } else {
+                        // No password needed, join directly
+                        completeJoinRoom(roomId, roomData);
+                    }
+                });
+                
+            } catch (error) {
+                showNotification('Error joining room: ' + error.message, 'error');
+            }
+        };
+        
+        // Complete the room joining process
+        const completeJoinRoom = (roomId, roomData) => {
+            // Add room to user's rooms
+            user.get('rooms').get(roomId).put({
+                name: roomData.name,
+                joinedAt: Date.now()
+            });
+            
+            // Add user to room members
+            const roomRef = gun.get('bloochat').get('rooms').get(roomId);
+            roomRef.get('members').set({
+                pub: user.is.pub,
+                alias: user.is.alias,
+                joinedAt: Date.now()
+            });
+            
+            // Add room to userRooms object
+            userRooms[roomId] = {
+                name: roomData.name,
+                joinedAt: Date.now()
+            };
+            
+            // Add room to UI
+            addRoomToUI(roomId, roomData.name);
+            
+            // Switch to the new room
+            switchRoom(roomId);
+            
+            // Close modal
+            closeModal(joinRoomModal);
+            joinRoomForm.reset();
+            
+            showNotification(`Joined room "${roomData.name}" successfully!`);
+        };
+        
+        // Open invite modal
+        const openInviteModal = (roomId) => {
+            if (currentRoom === 'public') return;
+            
+            const roomData = userRooms[currentRoom];
+            if (!roomData) return;
+            
+            inviteRoomName.textContent = roomData.name;
+            inviteCode.textContent = currentRoom;
+            
+            // Clear existing members
+            memberList.innerHTML = '';
+            
+            // Add current user
+            const currentUserEl = document.createElement('div');
+            currentUserEl.className = 'member you';
+            currentUserEl.textContent = user.is.alias + ' (you)';
+            memberList.appendChild(currentUserEl);
+            
+            // Load room members
+            const roomRef = gun.get('bloochat').get('rooms').get(currentRoom);
+            roomRef.get('members').map().once((member) => {
+                if (!member || member.pub === user.is.pub) return;
+                
+                const memberEl = document.createElement('div');
+                memberEl.className = 'member';
+                memberEl.textContent = member.alias;
+                memberList.appendChild(memberEl);
+            });
+            
+            openModal(inviteModal);
+        };
+        
+        // Copy invite code
+        const copyInviteCode = () => {
+            const code = inviteCode.textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code)
+                    .then(() => {
+                        showNotification('Room ID copied to clipboard!');
+                        copyInviteButton.textContent = 'Copied!';
+                        
+                        setTimeout(() => {
+                            copyInviteButton.textContent = 'Copy Room ID';
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        showNotification('Failed to copy: ' + err.message, 'error');
+                    });
+            } else {
+                // Fallback for browsers that don't support clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    showNotification('Room ID copied to clipboard!');
+                    copyInviteButton.textContent = 'Copied!';
+                    
+                    setTimeout(() => {
+                        copyInviteButton.textContent = 'Copy Room ID';
+                    }, 2000);
+                } catch (err) {
+                    showNotification('Failed to copy: ' + err.message, 'error');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        };
+        
+        // Modal helpers
+        const openModal = (modal) => {
+            modal.classList.add('show');
+        };
+        
+        const closeModal = (modal) => {
+            modal.classList.remove('show');
         };
         
         // Event listeners
@@ -582,8 +1170,44 @@
         signOutButton.addEventListener('click', signOut);
         messageForm.addEventListener('submit', sendMessage);
         
+        // Room event listeners
+        createRoomForm.addEventListener('submit', createRoom);
+        joinRoomForm.addEventListener('submit', joinRoom);
+        inviteButton.addEventListener('click', () => openInviteModal(currentRoom));
+        copyInviteButton.addEventListener('click', copyInviteCode);
+        
+        // Add event listener to room pills
+        roomsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('room-pill')) {
+                const roomId = e.target.dataset.room;
+                switchRoom(roomId);
+            }
+        });
+        
+        // Add "Join Room" pill if not already there
+        const addJoinRoomPill = () => {
+            if (!document.querySelector('.room-pill[data-room="join"]')) {
+                const joinPill = document.createElement('div');
+                joinPill.className = 'room-pill';
+                joinPill.dataset.room = 'join';
+                joinPill.textContent = 'Join Room';
+                
+                const createRoomPill = document.querySelector('.room-pill[data-room="create"]');
+                roomsList.insertBefore(joinPill, createRoomPill);
+            }
+        };
+        
+        // Close modal buttons
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = button.closest('.modal-overlay');
+                closeModal(modal);
+            });
+        });
+        
         // Initialize
         checkAuth();
+        addJoinRoomPill();
     </script>
 </body>
 </html>
