@@ -1205,6 +1205,25 @@
             });
         });
         
+        // Close modals when clicking outside of modal content
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                // Only close if the click is on the overlay itself, not its children
+                if (e.target === overlay) {
+                    closeModal(overlay);
+                }
+            });
+        });
+        
+        // Add ESC key press to close any open modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+                    closeModal(modal);
+                });
+            }
+        });
+        
         // Initialize
         checkAuth();
         addJoinRoomPill();
