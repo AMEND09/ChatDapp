@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Titan+One&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/lib/then.js"></script>
+    <style>
+        :root {
+            /* Primary Colors */
+            --primary-green: #0a9e6e;
+            --primary-orange: #ff9500;
+            --pure-white: #ffffff;
+            
+            /* Secondary Colors */
+            --dark-text: #333333;
+            --medium-text: #5f5f5f;
+            --light-text: rgba(255,255,255,0.7);
+            --error-red: #e74c3c;
+            
+            /* Accent Colors */
+            --active-green: #2ecc71;
+            --warning-yellow: #ffcc00;
+            --shadow: rgba(0,0,0,0.15);
+            
+            /* Spacing */
+            --base-unit: 10px;
+            --content-padding: 30px;
+            --component-spacing: 20px;
+            --element-spacing: 15px;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-green);
+            color: var(--dark-text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--content-padding);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            font-family: 'Titan One', sans-serif;
+            font-size: 48px;
+            color: var(--pure-white);
+            text-align: center;
+            margin-bottom: var(--component-spacing);
+            margin-top: var(--component-spacing);
+        }
+        
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: var(--element-spacing);
+        }
+        
+        .card {
+            background-color: var(--pure-white);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: var(--content-padding);
+            margin-bottom: var(--component-spacing);
+        }
+        
+        .auth-card {
+            max-width: 500px;
+            margin: var(--component-spacing) auto;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: var(--element-spacing);
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px;
+            color: var(--medium-text);
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.3s all;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(10, 158, 110, 0.2);
+        }
+        
+        input::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        button, 
+        input[type="submit"],
+        input[type="button"] {
+            background-color: var(--primary-orange);
+            color: var(--pure-white);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            transition: 0.2s all;
+            margin-right: var(--element-spacing);
+            margin-bottom: var(--element-spacing);
+        }
+        
+        button:hover, 
+        input[type="submit"]:hover,
+        input[type="button"]:hover {
+            transform: scale(1.1);
+        }
+        
+        button:active, 
+        input[type="submit"]:active,
+        input[type="button"]:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .secondary-button {
+            background-color: var(--pure-white);
+            color: var(--dark-text);
+            border: 2px solid #ddd;
+            padding: 12px 20px;
+        }
+        
+        .auth-form,
+        .message-form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--element-spacing);
+        }
+        
+        .status-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-loading .status-dot {
+            background-color: var(--warning-yellow);
+        }
+        
+        .status-connected .status-dot {
+            background-color: var(--active-green);
+        }
+        
+        .status-error .status-dot {
+            background-color: var(--error-red);
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: var(--medium-text);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 60vh;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--base-unit);
+            margin-bottom: var(--element-spacing);
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 12px;
+        }
+        
+        .message {
+            margin-bottom: var(--element-spacing);
+            padding: var(--base-unit);
+            border-radius: 8px;
+        }
+        
+        .message.mine {
+            background-color: rgba(10, 158, 110, 0.1);
+            align-self: flex-end;
+            margin-left: 20%;
+        }
+        
+        .message.others {
+            background-color: rgba(255, 149, 0, 0.1);
+            align-self: flex-start;
+            margin-right: 20%;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .username {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+        
+        .timestamp {
+            color: var(--medium-text);
+        }
+        
+        .message-content {
+            word-break: break-word;
+        }
+        
+        .message-form {
+            display: flex;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            margin-right: var(--element-spacing);
+            margin-bottom: 0 !important;
+        }
+        
+        .send-button {
+            width: auto !important;
+            margin-bottom: 0;
+        }
+        
+        .error-message {
+            color: var(--error-red);
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: var(--element-spacing);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: 0.3s all;
+        }
+        
+        .notification.success {
+            background-color: var(--active-green);
+        }
+        
+        .notification.error {
+            background-color: var(--error-red);
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .container {
+                padding: var(--element-spacing);
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            input[type="submit"],
+            input[type="button"],
+            button {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            .message-form {
+                flex-direction: column;
+            }
+            
+            .message-input {
+                margin-right: 0;
+                margin-bottom: var(--element-spacing) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chat</h1>
+        
+        <!-- Auth Card -->
+        <div id="auth-card" class="card auth-card">
+            <h2>Sign In or Sign Up</h2>
+            <div id="auth-status" class="status status-loading">
+                <div class="status-dot"></div>
+                <div class="status-text">Connecting to network...</div>
+            </div>
+            <form id="auth-form" class="auth-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Passphrase" required>
+                <div id="error-message" class="error-message hidden"></div>
+                <div class="button-group">
+                    <input type="submit" id="sign-in" value="Sign In">
+                    <input type="button" id="sign-up" value="Sign Up">
+                </div>
+            </form>
+        </div>
+        
+        <!-- Chat Card (initially hidden) -->
+        <div id="chat-card" class="card hidden">
+            <div class="status status-connected">
+                <div class="status-dot"></div>
+                <div class="status-text">Connected as <span id="current-user"></span></div>
+                <button id="sign-out" class="secondary-button" style="margin-left: auto;">Sign Out</button>
+            </div>
+            <div class="chat-container">
+                <div id="messages" class="messages">
+                    <!-- Messages will be inserted here -->
+                </div>
+                <form id="message-form" class="message-form">
+                    <input type="text" id="message-input" class="message-input" placeholder="Type your message..." required>
+                    <input type="submit" id="send-button" class="send-button" value="Send">
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // Initialize Gun
+        const gun = Gun({
+            peers: ['https://gun-manhattan.herokuapp.com/gun'] // Using a public relay peer
+        });
+        const user = gun.user();
+        const SEA = Gun.SEA;
+        
+        // DOM Elements
+        const authCard = document.getElementById('auth-card');
+        const chatCard = document.getElementById('chat-card');
+        const authForm = document.getElementById('auth-form');
+        const authStatus = document.getElementById('auth-status');
+        const errorMessage = document.getElementById('error-message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const signInButton = document.getElementById('sign-in');
+        const signUpButton = document.getElementById('sign-up');
+        const signOutButton = document.getElementById('sign-out');
+        const currentUserSpan = document.getElementById('current-user');
+        const messagesContainer = document.getElementById('messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const notificationElement = document.getElementById('notification');
+        
+        // Status indicators
+        const setStatus = (type, message) => {
+            authStatus.className = `status status-${type}`;
+            authStatus.querySelector('.status-text').textContent = message;
+        };
+
+        // Show error message
+        const showError = (message) => {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 5000);
+        };
+        
+        // Show notification
+        const showNotification = (message, type = 'success') => {
+            notificationElement.textContent = message;
+            notificationElement.className = `notification ${type}`;
+            notificationElement.classList.add('show');
+            setTimeout(() => {
+                notificationElement.classList.remove('show');
+            }, 3000);
+        };
+        
+        // Check if user is already authenticated
+        const checkAuth = () => {
+            setStatus('loading', 'Checking authentication...');
+            
+            user.recall({sessionStorage: true}, ack => {
+                if (user.is) {
+                    currentUserSpan.textContent = user.is.alias;
+                    authCard.classList.add('hidden');
+                    chatCard.classList.remove('hidden');
+                    loadMessages();
+                    setStatus('connected', 'Connected');
+                } else {
+                    setStatus('connected', 'Ready to sign in');
+                }
+            });
+        };
+        
+        // Sign in
+        const signIn = (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!username || !password) {
+                showError('Username and password are required');
+                return;
+            }
+            
+            setStatus('loading', 'Signing in...');
+            
+            user.auth(username, password, (ack) => {
+                if (ack.err) {
+                    setStatus('error', 'Authentication failed');
+                    showError(ack.err);
+                    return;
+                }
+                
+                currentUserSpan.textContent = username;
+                authCard.classList.add('hidden');
+                chatCard.classList.remove('hidden');
+                authForm.reset();
+                loadMessages();
+                showNotification(`Welcome back, ${username}!`);
+            });
+        };
+        
+        // Sign up
+        const signUp = () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!username || !password) {
+                showError('Username and password are required');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters');
+                return;
+            }
+            
+            setStatus('loading', 'Creating account...');
+            
+            user.create(username, password, (ack) => {
+                if (ack.err) {
+                    setStatus('error', 'Signup failed');
+                    showError(ack.err);
+                    return;
+                }
+                
+                showNotification('Account created! You can now sign in.');
+                setStatus('connected', 'Account created, please sign in');
+            });
+        };
+        
+        // Sign out
+        const signOut = () => {
+            user.leave();
+            chatCard.classList.add('hidden');
+            authCard.classList.remove('hidden');
+            messagesContainer.innerHTML = '';
+            showNotification('You have been signed out');
+        };
+        
+        // Format timestamp
+        const formatTime = (timestamp) => {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+        
+        // Add a message to the UI
+        const addMessageToUI = (data, key) => {
+            if (!data || !data.who || !data.what || !data.when) return;
+            
+            const messageDiv = document.createElement('div');
+            const isMyMessage = data.who === user.is.alias;
+            messageDiv.className = `message ${isMyMessage ? 'mine' : 'others'}`;
+            messageDiv.id = `msg-${key}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="username">${data.who}</span>
+                    <span class="timestamp">${formatTime(data.when)}</span>
+                </div>
+                <div class="message-content">${data.what}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+        
+        // Load messages
+        const loadMessages = () => {
+            const chatRef = gun.get('bloochat');
+            
+            chatRef.map().once((data, key) => {
+                if (data && data.who && data.what && data.when) {
+                    addMessageToUI(data, key);
+                }
+            });
+        };
+        
+        // Send message
+        const sendMessage = (e) => {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText) return;
+            
+            const messageData = {
+                who: user.is.alias,
+                what: messageText,
+                when: Date.now()
+            };
+            
+            const chatRef = gun.get('bloochat');
+            chatRef.set(messageData);
+            
+            messageForm.reset();
+        };
+        
+        // Event listeners
+        authForm.addEventListener('submit', signIn);
+        signUpButton.addEventListener('click', signUp);
+        signOutButton.addEventListener('click', signOut);
+        messageForm.addEventListener('submit', sendMessage);
+        
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>
